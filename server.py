@@ -40,7 +40,7 @@ def changehamsai(data, filename):
     msg = str(port)
     time.sleep(0.07)
     sn.send(msg.encode())
-    portstr = sn.recv(1024)
+    portstr = sn.recv(1024).decode()
     temp = ""
     portarr = []
     for i in range(len(portstr)):
@@ -77,7 +77,7 @@ def initwriter(filename, init):
         controller[0].send(initfile)
         time.sleep(0.15)
         controller[0].send(chunkid)
-        nport = int(controller[0].recv(1024))
+        nport = int(controller[0].recv(1024).decode())
         v = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         v.connect(('127.0.0.1', nport))
         time.sleep(0.15)
@@ -103,10 +103,10 @@ def writer(filename, client):
         client.send(data)
         time.sleep(0.05)
         client.send('///end///')
-        offset = int(client.recv(1024))
+        offset = int(client.recv(1024).decode())
         txt = ""
         while True:
-            nstring = client.recv(1024)
+            nstring = client.recv(1024).decode()
             txt = txt + nstring
             if len(nstring) >= 9:
                 if nstring[len(nstring) - 9:len(nstring)] == "///end///" or nstring == "///end///":
@@ -123,7 +123,7 @@ def writer(filename, client):
             controller[0].send(initfile)
             time.sleep(0.15)
             controller[0].send(chunkid)
-            nport = int(controller[0].recv(1024))
+            nport = int(controller[0].recv(1024).decode())
             v = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             v.connect(('127.0.0.1', nport))
             time.sleep(0.02)
@@ -163,7 +163,7 @@ def integritychecker():
                     break
                 sha1 = hashlib.sha1()
                 s = data[x * 8192:(x + 1) * 8192]
-                sha1.update(s)
+                sha1.update(s.encode())
                 hashint = hashint + int(sha1.hexdigest(), 16)
                 x = x + 1
             if sys == 1:
@@ -184,7 +184,7 @@ def hasher(data):
             break
         sha1 = hashlib.sha1()
         s = data[x * 8192:(x + 1) * 8192]
-        sha1.update(s)
+        sha1.update(s.encode())
         hashstr = hashstr + int(sha1.hexdigest(), 16)
         x = x + 1
     return hashstr
@@ -209,7 +209,7 @@ def getchunk(filename, cont):
     global string
     data = ""
     while True:
-        string = cont.recv(1024)
+        string = cont.recv(1024).decode()
         if len(string) >= 9:
             if string[len(string) - 9:len(string)] == "///end///":
                 data = data + string[:len(string) - 9]
@@ -225,7 +225,7 @@ def getchunk(filename, cont):
             break
         sha1 = hashlib.sha1()
         s = data[x * 8192:(x + 1) * 8192]
-        sha1.update(s)
+        sha1.update(s.encode())
         hashstr = hashstr + int(sha1.hexdigest(), 16)
         x = x + 1
     if filename not in files:
@@ -235,13 +235,13 @@ def getchunk(filename, cont):
 
 def listenerthread(client):
     while True:
-        string = client.recv(1024)
+        string = client.recv(1024).decode()
         print(f"Client said: {string}")
         if string[:10] == "initwrite:":
             filename = string[11:]
             data = ""
             while True:
-                string = client.recv(1024)
+                string = client.recv(1024).decode()
                 if len(string) >= 9:
                     if string[len(string) - 9:len(string)] == "///end///":
                         data = data + string[:len(string) - 9]
@@ -252,10 +252,10 @@ def listenerthread(client):
             client.close()
             break
         if string == 'write':
-            nstring = client.recv(1024)
+            nstring = client.recv(1024).decode()
             writer(nstring, client)
         if string == 'read':
-            nstring = client.recv(1024)
+            nstring = client.recv(1024).decode()
             sender(nstring, client)
         if string[:8] == "receive:":
             getchunk(string[9:], client)
@@ -268,6 +268,8 @@ def listenerthread(client):
 
 def clienter(ip, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    print(ip, port)
+    time.sleep(2)
     s.bind((ip, port))
     s.listen(10)
     while True:
@@ -278,10 +280,12 @@ def listener(cont):
     global port
     while True:
         try:
-            string = cont.recv(1024)
+            string = cont.recv(1024).decode()
             print(f"Controller said: {string}")
             if string[:5] == "port:":
                 port = int(string[6:])
+                print(port)
+                port += 1
                 print(f"port: {port}")
                 threading.Thread(target=clienter, args=('127.0.0.1', port)).start()
                 break

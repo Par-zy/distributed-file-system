@@ -18,22 +18,24 @@ def sender(data, s, filename):
         s.send(f'newfile {filename}'.encode())
         time.sleep(0.05)
         s.send(str(x).encode())
-        string = s.recv(1024)
+        string = s.recv(1024).decode()
         storep = []
         temp = ""
         for z in range(len(string)):
             if string[z] != '/':
-                temp = temp + chr(string[z])
+                temp = temp + string[z]
             else:
                 storep.append(int(temp))
                 temp = ""
         for y in storep:
             v = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            print(y)
+            y += 1
             v.connect(('127.0.0.1', y))
             time.sleep(0.03)
             v.send(f"receive: {filename}_chunk{x}".encode())
             time.sleep(0.03)
-            v.send(data[x * 65503:(x + 1) * 65503])
+            v.send(data[x * 65503:(x + 1) * 65503].encode())
             time.sleep(0.03)
             v.send("///end///".encode())
             v.close()
@@ -59,11 +61,11 @@ def Main():
         if query == "2":
             files = []
             s.send("filereq".encode())
-            string = s.recv(1024)
+            string = s.recv(1024).decode()
             temp = ""
             for x in range(len(string)):
                 if string[x] != '/':
-                    temp = temp + chr(string[x])
+                    temp = temp + string[x]
                 else:
                     files.append(temp)
                     temp = ""
@@ -77,7 +79,7 @@ def Main():
                 if filename not in files:
                     raise Exception("No such file")
             s.send(filename.encode())
-            chunks = int(s.recv(1024))
+            chunks = int(s.recv(1024).decode())
             qt = f"There are {chunks} chunks [0-{chunks - 1}]. Which one do you want to read? (Enter -1 for all): "
             q3 = input(qt)
             requests = []
@@ -87,7 +89,7 @@ def Main():
                 requests.append(q3)
             for x in requests:
                 s.send(x.encode())
-                portstr = s.recv(1024)
+                portstr = s.recv(1024).decode().decode()
                 portsread = [int(temp) for temp in portstr.split('/') if temp]
                 for con in range(len(portsread)):
                     v = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -98,13 +100,13 @@ def Main():
                     v.send(chunkname.encode())
                     dataread = ""
                     err = 0
-                    errstat = v.recv(1024)
+                    errstat = v.recv(1024).decode()
                     if errstat == "err":
                         print("Some error.")
                         err = err + 1
                     if err == 0:
                         while True:
-                            nstring = v.recv(1024)
+                            nstring = v.recv(1024).decode()
                             dataread = dataread + nstring
                             if len(nstring) >= 9:
                                 if nstring[len(nstring) - 9:len(nstring)] == "///end///":
@@ -122,7 +124,7 @@ def Main():
         if query == "3":
             files = []
             s.send("filereq2".encode())
-            string = s.recv(1024)
+            string = s.recv(1024).decode()
             temp = ""
             for x in range(len(string)):
                 if string[x] != '/':
@@ -138,7 +140,7 @@ def Main():
                 if filename in files:
                     break
             s.send(filename.encode())
-            chunks = int(s.recv(1024))
+            chunks = int(s.recv(1024).decode())
             qt = f"There are {chunks} chunks [0-{chunks - 1}]. Which one do you want to write to? "
             q3 = input(qt)
             requests = []
@@ -150,9 +152,9 @@ def Main():
                 chunkname = f"{filename}_chunk{x}"
                 s.send('buffer'.encode())
                 s.send(chunkname.encode())
-                s.recv(1024)
+                s.recv(1024).decode()
                 s.send(x.encode())
-                portstr = s.recv(1024)
+                portstr = s.recv(1024).decode()
                 portsread = [int(temp) for temp in portstr.split('/') if temp]
                 for con in range(len(portsread)):
                     v = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -162,13 +164,13 @@ def Main():
                     v.send(chunkname.encode())
                     dataread = ""
                     err = 0
-                    errstat = v.recv(1024)
+                    errstat = v.recv(1024).decode()
                     if errstat == "err":
                         print("Some error.")
                         err = err + 1
                     if err == 0:
                         while True:
-                            nstring = v.recv(1024)
+                            nstring = v.recv(1024).decode()
                             dataread = dataread + nstring
                             if len(nstring) >= 9:
                                 if nstring[len(nstring) - 9:len(nstring)] == "///end///":
@@ -184,7 +186,7 @@ def Main():
                         v.send("///end///".encode())
                         nstring = ''
                         while True:
-                            nnstring = v.recv(1024)
+                            nnstring = v.recv(1024).decode()
                             nstring = nstring + nnstring
                             if nnstring[len(nnstring) - 9:len(nnstring)] == "///end///":
                                 nstring = nstring[:len(nstring) - 9]
