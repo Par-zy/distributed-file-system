@@ -4,7 +4,6 @@ import sys
 import hashlib
 import math
 import os.path
-import uu
 import time
 
 
@@ -54,17 +53,9 @@ def Main():
         if query == "-1":
             break
         if query == "1":
-            q2 = input("Enter 1 to enter the path to an existing file or 2 to enter the text for the file: ")
-            if q2 == "1":
-                filepath = input("Enter file path: ")
-                with open(filepath, 'r') as f:
-                    data = f.read()
-                filename = input("Enter file name: ")
-                sender(data, s, filename)
-            if q2 == "2":
-                data = input("Enter the data: ")
-                filename = input("Enter file name: ")
-                sender(data, s, filename)
+            data = input("Enter the data: ")
+            filename = input("Enter file name: ")
+            sender(data, s, filename)
         if query == "2":
             files = []
             s.send("filereq".encode())
@@ -83,6 +74,8 @@ def Main():
                 filename = input("Which file do you want to read? ")
                 if filename in files:
                     break
+                if filename not in files:
+                    raise Exception("No such file")
             s.send(filename.encode())
             chunks = int(s.recv(1024))
             qt = f"There are {chunks} chunks [0-{chunks - 1}]. Which one do you want to read? (Enter -1 for all): "

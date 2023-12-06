@@ -4,7 +4,6 @@ import sys
 import hashlib
 import math
 import os.path
-import uu
 import random
 import time
 
