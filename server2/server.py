@@ -194,11 +194,11 @@ def sender(filename, s):
         data = f.read()
     hashstr = hasher(data)
     if hashstr == filesdict[filename]:
-        s.send("ok")
+        s.send("ok".encode())
         time.sleep(0.02)
-        s.send(data)
+        s.send(data.encode())
         time.sleep(0.02)
-        s.send('///end///')
+        s.send('///end///'.encode())
     else:
         s.send("err")
         msg = f"writereq: {filename}/{port}"

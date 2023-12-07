@@ -89,11 +89,11 @@ def Main():
                 requests.append(q3)
             for x in requests:
                 s.send(x.encode())
-                portstr = s.recv(1024).decode().decode()
+                portstr = s.recv(1024).decode()
                 portsread = [int(temp) for temp in portstr.split('/') if temp]
                 for con in range(len(portsread)):
                     v = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    v.connect((ip, portsread[con]))
+                    v.connect((ip, portsread[con] + 1))
                     time.sleep(0.02)
                     v.send('read'.encode())
                     chunkname = f"{filename}_chunk{x}"
